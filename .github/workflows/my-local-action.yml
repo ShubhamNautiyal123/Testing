@@ -17,19 +17,18 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Unity
-      uses: game-ci/unity-setup@v1
-      with:
-        unityVersion: 2021.3.5f1
-        components: Android
-        androidSdkPath: /usr/local/android-sdk
-
-    - name: Cache Unity Builder
+    - name: Install Unity
+      run: |
+        wget -q https://download.unity3d.com/download_unity/linux/unityhub_amd64.AppImage -O unityhub.AppImage
+        chmod +x unityhub.AppImage
+        ./unityhub.AppImage -- --install-location=/opt/Unity --components "Unity,Android Build Support"
+        
+    - name: Cache Unity Hub
       uses: actions/cache@v2
       with:
-        path: ~/.cache/unity-builder
+        path: /opt/Unity
         key: ${{ runner.os }}-unity-${{ hashFiles('**/*.csproj') }}
 
     - name: Build Android
       run: |
-        unity-builder --buildTarget Android --outputPath Build
+        /opt/Unity/Editor/Unity -quit -batchmode -nographics -projectPath . -executeMethod UnityEditor.Android.BuildPlayerWindow+BuildPlayerOptions.BuildPlayer -logFile /dev/stdout
