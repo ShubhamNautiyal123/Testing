@@ -1,4 +1,4 @@
-name: Unity Android Build
+name: My Local Action
 
 on:
   push:
