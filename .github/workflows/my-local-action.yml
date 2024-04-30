@@ -3,32 +3,32 @@ name: Unity Android Build
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main # Adjust the branch as needed
 
 jobs:
   build:
     name: Build Android
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
-    - name: Install Unity
-      run: |
-        wget -q https://download.unity3d.com/download_unity/linux/unityhub_amd64.AppImage -O unityhub.AppImage
-        chmod +x unityhub.AppImage
-        ./unityhub.AppImage -- --install-location=/opt/Unity --components "Unity,Android Build Support"
-        
-    - name: Cache Unity Hub
-      uses: actions/cache@v2
+      
+    - name: Set up Unity
+      uses: actions/setup-unity@v1
       with:
-        path: /opt/Unity
-        key: ${{ runner.os }}-unity-${{ hashFiles('**/*.csproj') }}
-
-    - name: Build Android
+        unityVersion: 2021.3.5f1
+        components: Android
+        unityEmail: ${{ secrets.UNITY_EMAIL }}
+        unityPassword: ${{ secrets.UNITY_PASSWORD }}
+        license: ${{ secrets.UNITY_LICENSE }}
+        
+    - name: Build Unity project
       run: |
-        /opt/Unity/Editor/Unity -quit -batchmode -nographics -projectPath . -executeMethod UnityEditor.Android.BuildPlayerWindow+BuildPlayerOptions.BuildPlayer -logFile /dev/stdout
+        unity -quit -batchmode -projectPath . -executeMethod BuildScript.BuildAndroid
+        
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: android-build
+        path: ./Builds/Android # Change the path to your Android build directory
